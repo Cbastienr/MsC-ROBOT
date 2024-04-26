@@ -48,3 +48,5 @@ def stop():
     pwm_b.stop()
 
 drive_forward()
+# Nettoyage des broches GPIO
+GPIO.cleanup()
