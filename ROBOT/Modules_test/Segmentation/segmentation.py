@@ -1,50 +1,43 @@
-import openai
+import spacy
+import os
+
+def segment_text_with_nlp(text):
+    # Charger le modèle de langue français
+    nlp = spacy.load("fr_core_news_sm")
+
+    # Analyser le texte
+    doc = nlp(text)
+
+    # Segmenter le texte en fonction des balises "Patient:" et "Médecin:"
+    patient_text = ""
+    doctor_text = ""
+    current_speaker = None
+
+    for token in doc:
+        print(f"Token : {token.text}, Entité : {token.ent_type_}, Pos : {token.pos_}")
+
+        if token.text.strip() == "Patient:":
+            current_speaker = "Patient"
+        elif token.text.strip() == "Médecin:":
+            current_speaker = "Médecin"
+        elif current_speaker == "Patient":
+            patient_text += token.text + " "
+        elif current_speaker == "Médecin":
+            doctor_text += token.text + " "
+
+    return patient_text.strip(), doctor_text.strip()
 
 def segment_text_from_file(file_path):
     # Lire le contenu du fichier
     with open(file_path, "r") as file:
         text = file.read()
 
-    # Segmenter le texte en fonction des balises "Patient:" et "Médecin:"
-    lines = text.split("\n")
-    patient_text = ""
-    doctor_text = ""
-    patient_flag = False
-    doctor_flag = False
+    # Appeler la fonction segment_text_with_nlp
+    return segment_text_with_nlp(text)
 
-    for line in lines:
-        if "Patient:" in line:
-            patient_flag = True
-            doctor_flag = False
-        elif "Médecin:" in line:
-            patient_flag = False
-            doctor_flag = True
-        
-        if patient_flag:
-            patient_text += line + "\n"
-        elif doctor_flag:
-            doctor_text += line + "\n"
-
-    return patient_text.strip(), doctor_text.strip()
-
-
-def main():
-    # Chemin du fichier transcription.txt
-    file_path = "transcription.txt"
-
-    # Segmenter le texte extrait du fichier
-    patient_text, doctor_text = segment_text_from_file(file_path)
-
-    # Afficher les textes segmentés
-    print("Texte du patient:")
-    print(patient_text)
-    print("\nTexte du médecin:")
-    print(doctor_text)
-
-    # Ajoutez ici le code pour résumer les textes du patient et du médecin
-    # et exécuter les commandes en fonction des requêtes du médecin
-
-if __name__ == "__main__":
-    main()
-
-
+# Utilisation :
+patient_text, doctor_text = segment_text_from_file("transcription.txt")
+print("Texte du patient:")
+print(patient_text)
+print("\nTexte du médecin:")
+print(doctor_text)
